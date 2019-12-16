@@ -31,6 +31,7 @@
 
 ARDUBOY_NO_USB;
 
+
 void drawYesNo()
 {
 	uint8_t startX = 91;
@@ -703,13 +704,13 @@ void setup()
 	//No USB: 30 bytes
 	//BEGIN: arduboy.begin()
 	arduboy.boot();
+	arduboy.display();
 	arduboy.systemButtons();
 	#ifdef ENABLE_MUSIC
 	arduboy.audio.begin();
 	#endif
 	//END: arduboy.begin()
 	arduboy.setFrameRate(30);
-	arduboy.display();
 }
 
 void loop()
