@@ -59,6 +59,7 @@ void drawGold()
 
 void drawMessageBuffer()
 {
+	uint8_t justPressed = arduboy.justPressedButtons();
 	register uint8_t count = (uint8_t)globalCounter;
 	cursorX = 0;
 	cursorY = 56;
@@ -80,12 +81,13 @@ void drawMessageBuffer()
 	}
 	if (messageBuffer[count] != CHAR_NULL)
 		++globalCounter;
-	else if (arduboy.justPressed(A_BUTTON | B_BUTTON) && !(flags & FLAG_HOLD_MESSAGE_BUFFER))
+	else if (((justPressed & A_BUTTON) || (justPressed & B_BUTTON)) && !(flags & FLAG_HOLD_MESSAGE_BUFFER))
 		flags &= ~FLAG_SHOW_MESSAGE_BUFFER;
 }
 
 void gameLoop_Title()
 {
+	uint8_t justPressed = arduboy.justPressedButtons();
 	uint8_t startX = 0;
 	uint8_t stopX = 126;
 	arduboy.drawBitmap(1, 2, bmpTitle, 126, 48);
@@ -110,11 +112,11 @@ void gameLoop_Title()
 	cursorX = 1;
 	cursorY = 56;
 	drawMessageCompressed(messageTitleOptions);
-	if (arduboy.justPressed(LEFT_BUTTON))
+	if (justPressed & LEFT_BUTTON)
 		selection = (selection + 2) % 3;
-	else if (arduboy.justPressed(RIGHT_BUTTON))
+	else if (justPressed & RIGHT_BUTTON)
 		selection = (selection + 1) % 3;
-	else if (arduboy.justPressed(B_BUTTON))
+	else if (justPressed & B_BUTTON)
 	{
 		if (selection == 0) // NEW GAME
 		{
@@ -157,12 +159,15 @@ void gameLoop_Title()
 void gameLoop_Playing()
 {
 	bool check = false;
+	uint8_t pressed = arduboy.pressedButtons();
+	uint8_t justPressed = arduboy.justPressedButtons();
+
 	drawMap();
 	if (flags & FLAG_SHOW_MESSAGE_BUFFER)
 		return;
 	else if (playerXOff == 0 && playerYOff == 0)
 	{
-		if (arduboy.pressed(LEFT_BUTTON))
+		if (pressed & LEFT_BUTTON)
 		{
 			player.dir = DIR_LEFT;
 			if (canMove(pChunk, player.x, player.y, DIR_LEFT))
@@ -171,7 +176,7 @@ void gameLoop_Playing()
 				playerXOff = -16;
 			}
 		}
-		else if (arduboy.pressed(RIGHT_BUTTON))
+		else if (pressed & RIGHT_BUTTON)
 		{
 			player.dir = DIR_RIGHT;
 			if (canMove(pChunk, player.x, player.y, DIR_RIGHT))
@@ -180,7 +185,7 @@ void gameLoop_Playing()
 				playerXOff = 16;
 			}
 		}
-		else if (arduboy.pressed(UP_BUTTON))
+		else if (pressed & UP_BUTTON)
 		{
 			player.dir = DIR_UP;
 			if (canMove(pChunk, player.x, player.y, DIR_UP))
@@ -189,7 +194,7 @@ void gameLoop_Playing()
 				playerYOff = -16;
 			}
 		}
-		else if (arduboy.pressed(DOWN_BUTTON))
+		else if (pressed & DOWN_BUTTON)
 		{
 			player.dir = DIR_DOWN;
 			if (canMove(pChunk, player.x, player.y, DIR_DOWN))
@@ -198,9 +203,9 @@ void gameLoop_Playing()
 				playerYOff = 16;
 			}
 		}
-		else if (arduboy.justPressed(B_BUTTON))
+		else if (justPressed & B_BUTTON)
 			execEvent(EVENT_BUTTON_ACTIVATED);
-		else if (arduboy.justPressed(A_BUTTON))
+		else if (justPressed & A_BUTTON)
 		{
 			previousState = gameState;
 			gameState = STATE_MENU_MAIN;
@@ -318,6 +323,8 @@ void gameLoop_Menu_Main()
 {
 	uint8_t startX = 0;
 	uint8_t stopX = 0;
+	uint8_t justPressed = arduboy.justPressedButtons();
+
 	drawMap();
 	drawSmallMessageBox();
 	if (selection == 0)
@@ -345,13 +352,13 @@ void gameLoop_Menu_Main()
 	cursorX = 4;
 	cursorY = 56;
 	drawMessageCompressed(messageMainMenu);
-	if (arduboy.justPressed(LEFT_BUTTON))
+	if (justPressed & LEFT_BUTTON)
 		selection += 3;
-	else if (arduboy.justPressed(RIGHT_BUTTON))
+	else if (justPressed & RIGHT_BUTTON)
 		++selection;
-	else if (arduboy.justPressed(A_BUTTON))
+	else if (justPressed & A_BUTTON)
 		gameState = STATE_PLAYING;
-	else if (arduboy.justPressed(B_BUTTON))
+	else if (justPressed & B_BUTTON)
 	{
 		if (selection == 0) //ITEM MENU
 			gameState = STATE_MENU_ITEMS;
@@ -378,6 +385,8 @@ void gameLoop_Menu_Main()
 
 void gameLoop_Menu_Items()
 {
+	uint8_t justPressed = arduboy.justPressedButtons();
+
 	for (int16_t i = 128; i < 896; ++i)
 		arduboy.sBuffer[i] = 0xFF;
 	cursorX = 22;
@@ -412,18 +421,18 @@ void gameLoop_Menu_Items()
 			}
 		}
 	}
-	if (arduboy.justPressed(LEFT_BUTTON | RIGHT_BUTTON))
+	if ((justPressed & LEFT_BUTTON) || (justPressed & RIGHT_BUTTON))
 		selection ^= 1;
-	else if (arduboy.justPressed(UP_BUTTON))
+	else if (justPressed & UP_BUTTON)
 		selection = (selection + 6) & 7;
-	else if (arduboy.justPressed(DOWN_BUTTON))
+	else if (justPressed & DOWN_BUTTON)
 		selection = (selection + 2) & 7;
-	else if (arduboy.justPressed(A_BUTTON))
+	else if (justPressed & A_BUTTON)
 	{
 		selection = -1;
 		gameState = previousState;
 	}
-	else if (arduboy.justPressed(B_BUTTON) && player.items[selection] != 0)
+	else if ((justPressed & B_BUTTON) && player.items[selection] != 0)
 	{
 		gameState = previousState;
 		if (previousState == STATE_PLAYING)
@@ -436,6 +445,7 @@ void gameLoop_Menu_Items()
 
 void gameLoop_Menu_Stats()
 {
+	uint8_t justPressed = arduboy.justPressedButtons();
 	uint16_t immunity = IMMUNE_FIRE;
 	arduboy.drawBitmap(0, 0, playerBattleSprite, 24, 24);
 	cursorX = 25;
@@ -491,29 +501,33 @@ void gameLoop_Menu_Stats()
 		else if (player.seal & (16 << i))
 			arduboy.drawBitmap(x + 4, y, bmpKey, 4, 8);
 	}
-	if (arduboy.justPressed(A_BUTTON | B_BUTTON))
+	if ((justPressed & A_BUTTON) || (justPressed & B_BUTTON))
 		gameState = STATE_PLAYING;
 }
 
 void gameLoop_Upload()
 {
+	uint8_t justPressed = arduboy.justPressedButtons();
+
 	cursorX = 0;
 	cursorY = 0;
 	lineStartX = 0;
 	drawMessageCompressed(messageUpload);
-	if (arduboy.justPressed(DOWN_BUTTON))
+	if (justPressed & DOWN_BUTTON)
 		arduboy.exitToBootloader();
-	else if (arduboy.justPressed(A_BUTTON))
+	else if (justPressed & A_BUTTON)
 		gameState = STATE_TITLE;
 }
 
 void gameLoop_Story()
 {
+	uint8_t justPressed = arduboy.justPressedButtons();
+
 	cursorX = 0;
 	cursorY = 0;
 	lineStartX = 0;
 	drawMessageCompressed((uint8_t*)pgm_read_word(messageStory + selection));
-	if (arduboy.justPressed(A_BUTTON | B_BUTTON))
+	if ((justPressed & A_BUTTON) || (justPressed & B_BUTTON))
 		++selection;
 	if (selection == 4)
 	{
@@ -539,12 +553,14 @@ void gameLoop_Purchase()
 {
 	int8_t count = 1;
 	int8_t dir = 1;
+	uint8_t justPressed = arduboy.justPressedButtons();
+
 	drawMap();
-	if (arduboy.justPressed(LEFT_BUTTON | RIGHT_BUTTON))
+	if ((justPressed & LEFT_BUTTON) || (justPressed & RIGHT_BUTTON))
 		selection ^= 1;
-	else if (arduboy.justPressed(A_BUTTON))
+	else if (justPressed & A_BUTTON) 
 		gameState = STATE_PLAYING;
-	else if (arduboy.justPressed(B_BUTTON))
+	else if (justPressed & B_BUTTON)
 	{
 		if (selection == 0)
 		{
@@ -597,6 +613,8 @@ void gameLoop_Purchase()
 
 void gameLoop_NameEntry()
 {
+	uint8_t justPressed = arduboy.justPressedButtons();
+
 	cursorX = 1;
 	cursorY = 0;
 	drawMessageCompressed(wordName);
@@ -629,15 +647,15 @@ void gameLoop_NameEntry()
 	if (selection == 43)
 		arduboy.fillRect(cursorX - 1, cursorY, 7, 9, WHITE);
 	drawChar(CHAR_OK);
-	if (arduboy.justPressed(LEFT_BUTTON))
+	if (justPressed & LEFT_BUTTON)
 		--selection;
-	else if (arduboy.justPressed(RIGHT_BUTTON))
+	else if (justPressed & RIGHT_BUTTON)
 		++selection;
-	else if (arduboy.justPressed(UP_BUTTON))
+	else if (justPressed & UP_BUTTON)
 		selection -= 11;
-	else if (arduboy.justPressed(DOWN_BUTTON))
+	else if (justPressed & DOWN_BUTTON)
 		selection += 11;
-	else if (arduboy.justPressed(A_BUTTON))
+	else if (justPressed & A_BUTTON)
 	{
 		if (globalCounter == 0)
 		{
@@ -653,7 +671,7 @@ void gameLoop_NameEntry()
 		else
 			player.name[globalCounter] = CHAR_NULL;
 	}
-	else if (arduboy.justPressed(B_BUTTON))
+	else if (justPressed & B_BUTTON)
 	{
 		if (selection == 42)
 			player.name[globalCounter] = CHAR_SPACE;
@@ -676,6 +694,7 @@ void gameLoop_NameEntry()
 
 void setup()
 {
+	uint8_t pressed = arduboy.pressedButtons();
 	//Serial.begin(9600);
 	//Space Savings
 	//Minimal Boot: 746 bytes
@@ -683,7 +702,7 @@ void setup()
 	//BEGIN: arduboy.begin()
 	arduboy.boot();
 #ifdef ENABLE_MUSIC
-	bool enabled = EEPROM.read(EEPROM_AUDIO_ON_OFF) ^ arduboy.pressed(A_BUTTON);
+	bool enabled = EEPROM.read(EEPROM_AUDIO_ON_OFF) ^ (pressed & A_BUTTON);
 	if (enabled)
 		arduboy.audio.on();
 	else
