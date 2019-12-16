@@ -1,0 +1,374 @@
+Shattered Lands is a series of top-down RPG games for the Arduboy
+The world has been shattered into several disconnected realms.
+
+The heroes must travel the land defeating the evil forces that split the world
+along the way they will encounter local threats to the current land which are
+preventing them from reaching the great evil.
+
+The maps will have 4 tilesets to choose from, with each map specifying the tileset used.
+Each tileset is 16 tiles that are 16x16 pixels in size.
+
+Items:
+     12345678
+	1: POTION
+	2: S-POTION
+	3: X-POTION
+	4: ETHER
+	5: S-ETHER
+	6: X-ETHER
+	7: ELIXIR
+	8: X-ELIXIR
+
+Spells:
+	1: CURE (heals target based on magic stat) (targets party member only)
+	2: LIFE (revives dead target) (targets party member only)
+	3: FIRE (fire damage)
+	4: AQUA (water based damage)
+	5: ROCK (earth based damage)
+	6: AERO (air based damage)
+	7: DARK (dark based damage)
+	8: HOLY (light based damage)
+
+Character Battle Sprite Frames:
+	0: Idle
+	1: Wounded
+	2: Dead
+	3: Attack
+	4: Use/Cast
+	5: Victory
+
+Monsters:
+	1: GOBLIN   (DONE)
+	2: FIREWOLF
+	3: SANDWORM
+	4: MEGABAT
+	5: SKELETON
+	6: SLIME
+	7: WIZARD
+	8: GOLEM
+
+	Tower 1: SKELETON+GOBLIN
+	Tower 2: SLIME+SKELETON
+	Tower 3: WIZARD+SLIME
+	Tower 4: GOLEM+WIZARD
+	Tower 5: SKELETON+SLIME+WIZARD+SPECTER
+	Caves: MEGABAT
+	Fields: GOBLIN (groups of 1 or 2)
+	Forests: FIREWOLF
+	Desert: SANDWORM
+
+Monsters:
+			12345678
+	 1: GOBLIN   (DONE)
+	 2: WOLF
+	 3: SLIME
+	 4: OGRE
+	 5: SKELETON
+	 6: SPECTER
+	 7: WIZARD
+	 8: ARACHNID
+	 9: SANDWORM
+	10: SCORPION
+	11: GOLEM
+	12: TROLL
+	13: VAMPIRE
+	14: PYTHON
+	15: MEGABAT
+
+Bosses:
+	1: Tower 1
+	2: Tower 2
+	3: Tower 3
+	4: Tower 4
+	5: Tower 5
+	6: Final Boss
+
+Monster/Boss:
+	2 Bytes
+		- 1 bit 0=Monster 1=Boss
+		If Monster
+			- 4 bits sprite ID
+			- 10 bits HP
+			- 1 bit unused
+		If Boss
+			- 3 bits sprite ID
+			- 12 bits HP
+	2 Bytes
+		- 2 bits per spell
+			0 = Immune
+			1 = 50% damage
+			2 = 100% damage
+			3 = 150% damage
+	3 Bytes
+		- 6 bits Attack
+		- 6 bits Defense
+		- 6 bits Speed
+		- 6 bits Magic
+	1 Byte
+		- 1 bit per spell indicates if it can cast that spell
+	1 Byte EXP Gain
+	1 Byte G Gain
+	1 Byte
+		- 1 bit drops item
+		- 3 bits itemID
+		- 1 bit UNKNOWN
+		- 1 bit UNKNOWN
+		- 1 bit UNKNOWN
+		- 1 bit UNKNOWN
+
+Monster Groups:
+	4 Bytes
+		- 1 bit BGM 0=Battle 1=Boss
+		- 1 bit monster1 0=Monster 1=Boss
+		- 4 bits monster1 ID
+		- 1 bit monster2 0=Monster 1=Boss
+		- 4 bits monster2 ID
+		- 1 bit monster3 0=Monster 1=Boss
+		- 4 bits monster3 ID
+		- 1 bit monster4 0=Monster 1=Boss
+		- 4 bits monster4 ID
+		- 1 bit monster5 0=Monster 1=Boss
+		- 4 bits monster5 ID
+		- 1 bit monster6 0=Monster 1=Boss
+		- 4 bits monster6 ID
+		- 1 bit can escape
+	2 Bytes tiles found on
+
+Songs: 8 total
+1: Title
+2: Battle
+3: Boss
+4: Overworld
+5: Cave/Dungeon
+6: Town/Castle
+7: Tower
+8: Game Over
+
+characters:
+  000000  A 000001  B 000010  C 000011
+D 000100  E 000101  F 000110  G 000111
+H 001000  I 001001  J 001010  K 001011
+L 001100  M 001101  N 001110  O 001111
+P 010000  Q 010001  R 010010  S 010011
+T 010100  U 010101  V 010110  W 010111
+X 011000  Y 011001  Z 011010  0 011011
+1 011100  2 011101  3 011110  4 011111
+5 100000  6 100001  7 100010  8 100011
+9 100100  - 100101  ! 100110  $ 100111
+' 101000  , 101001  . 101010  ? 101011
+/ 101100 ?? 111110 \n 111111
+
+Huffman Table Format 2*NumNodes+1*NumLeafs
+Node = 2 Bytes
+	- 1 bit indicates it's a node (1)
+	- 7 bits for left node offset
+	- 1 bit indicates it's a node (1)
+	- 7 bits for right node offset
+Leaf = 1 Byte
+	- 1 bit indicates it's a leaf node (0)
+	- 1 bit is unused
+	- 6 bits character code
+
+Reading huffman text
+start with pointer to root node and current bit
+read next bit
+pointer += (byte at pointer + bit) & 127
+if byte at pointer & 128 is zero then leaf pointer is leaf node
+	return character code (byte at pointer & 63)
+	set pointer to root node
+
+Save Game bits (424 bits = 53 bytes = 19 save slots)
+	 24: SL#
+	 24: name
+	  4: mapID
+	  6: chunkID
+	  3: x
+	  3: y
+	  2: dir
+	 14: money
+	  7: level
+	 10: hp
+	  7: mp
+	  5: weaponID
+	  5: armorID
+	  5: accessoryID
+	  4: status effect
+	  2: ally ID
+	  7: ally level
+	 10: ally hp
+	  7: ally mp
+	  5: ally weaponID
+	  5: ally armorID
+	  5: ally accessoryID
+	  4: ally status effect
+	192: items (16 slots)
+		- 7: item qty
+		- 5: item ID
+	 32: switch states
+	 32: variable values
+
+1 Large map takes 1160 bytes with 0 events
+
+Map data storage: (Header=8 Chunks=26*num Events=X)
+1 Byte
+	- 2 bits tileset ID
+	- 6 bits num chunks - 1
+1 Byte
+	- 5 bits unused
+	- 3 bits BGM ID
+1 Byte - Monsters found
+X Bytes Chunk Data
+X Bytes Event Data
+
+Chunks: 18
+2 Bytes - 1 bit/tile indicating whether or not it uses that tile.
+3 Bytes
+	- 6 bits up chunk
+	- 6 bits down chunk
+	- 6 bits left chunk
+	- 6 bits right chunk
+if == 1 tile used
+	0 Bytes (whole chunk uses 1 tile)
+if <= 2 tiles used
+	8 Bytes - 1 bit/tile
+if <= 4 tiles used
+	16 Bytes - 2 bits/tile
+if <= 8 tiles used
+	24 Bytes - 3 bits/tile (3 bytes per column)
+else
+	32 Bytes - 4 bits/tile
+
+Events:
+1 Byte = offset to next event (0 if last)
+2 Bytes
+	- 6 bits chunk ID
+	- 3 bits x-coordinate within chunk
+	- 3 bits y-coordinate within chunk
+	- 4 bits sprite ID (0xF = no graphic, event is activated by stepping on it, otherwise event is activated by action key)
+X Bytes event instructions
+
+Event Instructions:
+	1 byte instruction ID
+	 0 = Teleport (teleports the player to the specified location)
+		2 Bytes
+			- 4 bits mapID
+			- 6 bits chunk ID
+			- 6 bits xy-coordinate within chunk
+	 1 = Show message box (displays a message box)
+		X Bytes message text compressed using global huffman encoding table
+	 2 = Show Yes/No (asks a yes/no question)
+		1 byte offset to YES event
+		1 byte offset to NO event
+		X Bytes message text compressed using global huffman encoding table
+	 3 = Change BGM
+		1 byte
+			- 2 bits BGM instruction
+				0 = Reset BGM to map's BGM
+				1 = Pause BGM
+				2 = Resume BGM
+				3 = Play specific BGM
+			- 3 bits BGM ID
+			- 1 bit UNKNOWN
+			- 1 bit UNKNOWN
+			- 1 bit UNKNOWN
+	 4 = Conditional jump
+		1 byte
+			- 2 bits condition type
+				0 = Switch is on
+					- 6 bits switch ID
+				1 = Player has item
+					- 6 bits item ID
+				2 = Variable
+					- 3 bits comparison (0=LESS, 1=LESS_EQUAL, 2=EQUAL, 3=GREAT_EQUAL, 4=GREAT, 5=NOT_EQUAL)
+					1 byte
+						- 4 bits variable 1 ID
+						- 4 bits variable 2 ID (if same as variable 1 ID then compare to raw value)
+							2 bytes value
+				3 = UNKNOWN
+		1 byte offset to TRUE event (if false process next event)
+	 5 = Set switch
+		1 byte
+			- 6 bits switch ID
+			- 2 bits action (0=OFF 1=ON 2=TOGGLE)
+	 6 = Set variable
+		1 byte
+			- 4 bits variable ID
+			- 3 bits operation (0=SET 1=ADD 2=SUBTRACT 3=MULTIPLY, 4=DIVIDE, 5=MODULOUS, 6=LSHIFT 7=RSHIFT)
+			- 1 bit if on then use value from another variable, otherwise use raw value
+		1 or 2 bytes if use other variable then 1 byte for variable ID (upper 4 bits are unused) Otherwise 2 bytes holding raw value
+	 7 = Show shop
+		1 byte item ID
+	 8 = Show inn
+		1 byte price per hp multiplier in 4.4 format (price = hp * multiplier >> 4)
+	 9 = Play SFX
+		1 byte
+			- 6 bits SFX ID
+			- 2 bits channel ID
+	10 = Battle
+		1 byte
+			- 1 bit on lose (0=game over 1=end event processing)
+			- 3 bits BGM ID
+			- 1 bit UNKNOWN
+			- 1 bit UNKNOWN
+			- 1 bit UNKNOWN
+			- 1 bit UNKNOWN
+		1 bytes
+			- 4 bits enemy 1 ID
+			- 4 bits enemy 2 ID
+		1 bytes
+			- 4 bits enemy 3 ID
+			- 4 bits enemy 4 ID
+		1 bytes
+			- 4 bits enemy 5 ID
+			- 4 bits enemy 6 ID
+	11 = Flash
+		1 byte
+			- 2 bits flashes per second
+			- 2 bits target (0=THIS 1=HERO 2=SCREEN 3=UNKNOWN)
+			- 4 bits duration in 1/4 seconds (ms = duration * 250) 4 seconds max
+	12 = Shake
+		1 byte
+			- 2 bits target (0=THIS 1=HERO 2=SCREEN 3=UNKNOWN)
+			- 2 bits magnitude (offset = +/- (magnitude + 1) * 2)
+			- 4 bits duration in 1/4 seconds (ms = duration * 250) 4 seconds max
+	13 = Set screen transition
+		1 byte
+			- 2 bits transition type (0=teleport erase, 1=teleport show, 2=battle erase, 3=battle show)
+			- 1 bit UNKNOWN
+			- 1 bit UNKNOWN
+			- 1 bit UNKNOWN
+			- 3 bits transition ID
+	14 = Move event
+		1 byte
+			- 2 bits target (0=THIS 1=HERO 2=SCREEN 3=UNKNOWN)
+			- 6 bits num movements
+		X bits (num movements * 4)
+			- 4 bit IGNORE COLLISION
+				 0  = MOVE UP
+				 1  = MOVE DOWN
+				 2  = MOVE LEFT
+				 3  = MOVE RIGHT
+				 4  = FACE UP
+				 5  = FACE DOWN
+				 6  = FACE LEFT
+				 7  = FACE RIGHT
+				 8  = MOVE FORWARD
+				 9 = MOVE BACKWARD
+				10 = TURN LEFT
+				11 = TURN RIGHT
+				12 = TURN 180
+				13 = TOGGLE LOCK FACING
+				14 = TOGGLE COLLISION DETECTION
+				15 = TOGGLE SPRITE
+	15 = END EVENT PROCESSING (mandatory as last instruction of event, but can also be used mid event)
+	
+	0 = Teleport (teleports the player to the specified location)
+	1 = Show message box (displays a message box)
+	2 = Show Yes/No (asks a yes/no question)
+	3 = Conditional jump
+	4 = Set switch
+	5 = Set variable
+	6 = Show shop
+	7 = Show inn
+	8 = Battle
+	9 = END EVENT PROCESSING (mandatory as last instruction of event, but can also be used mid event)
