@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="/">
+    <file>images/plus.png</file>
+    <file>images/chunkview.png</file>
+    <file>images/mapviewbg.png</file>
+  </qresource>
+</RCC>
