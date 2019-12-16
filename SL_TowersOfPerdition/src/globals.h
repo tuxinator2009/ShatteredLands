@@ -20,7 +20,7 @@
 #define GLOBALS_H
 
 #include <Arduino.h>
-#include <Arduboy2.h>
+#include "Arduboy2Ext.h"
 
 #define READ_WORD(x) __builtin_bswap16(pgm_read_word(x))
 #define READ_DWORD(x) __builtin_bswap32(pgm_read_dword(x))
@@ -126,7 +126,7 @@ static const uint8_t DIR_DOWN = 1;
 static const uint8_t DIR_LEFT = 2;
 static const uint8_t DIR_RIGHT = 3;
 
-Arduboy2Base arduboy;
+Arduboy2Ext arduboy;
 
 const uint8_t *currentMonsterGroup = 0;
 uint8_t globalCounter = 0;

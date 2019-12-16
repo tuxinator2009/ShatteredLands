@@ -274,6 +274,8 @@ void setFlashingSprite(int8_t id)
 
 void battleChooseAction()
 {
+	uint8_t justPressed = arduboy.justPressedButtons();
+
 	uint8_t startX, stopX;
 	uint8_t y = (selection & 1) + 6;
 	if (selection <= 1)
@@ -297,7 +299,7 @@ void battleChooseAction()
 	cursorY = 48;
 	lineStartX = 7;
 	drawMessageCompressed(messageBattleChooseAction);
-	if (arduboy.justPressed(B_BUTTON))
+	if (justPressed & B_BUTTON)
 	{
 		clearBattleActions();
 		battleActions[6].action = selection;
@@ -329,17 +331,18 @@ void battleChooseAction()
 			battleState = BATTLE_MONSTER_ACTIONS;
 		selection = 0;
 	}
-	else if (arduboy.justPressed(UP_BUTTON | DOWN_BUTTON))
+	else if ((justPressed & UP_BUTTON) | (justPressed & DOWN_BUTTON))
 		selection ^= 1;
-	else if (arduboy.justPressed(LEFT_BUTTON))
+	else if (justPressed & LEFT_BUTTON)
 		selection += 4;
-	else if (arduboy.justPressed(RIGHT_BUTTON))
+	else if (justPressed & RIGHT_BUTTON)
 		selection += 2;
 	selection %= 6;
 }
 
 void battleSelectMonster()
 {
+	uint8_t justPressed = arduboy.justPressedButtons();
 	int8_t count = 0;
 	cursorX = 1;
 	cursorY = 48;
@@ -364,13 +367,13 @@ void battleSelectMonster()
 			++count;
 		}
 	}
-	if (arduboy.justPressed(A_BUTTON))
+	if (justPressed & A_BUTTON)
 	{
 		selection = 0;
 		battleState = BATTLE_CHOOSEACTION;
 		setFlashingSprite(8);
 	}
-	else if (arduboy.justPressed(B_BUTTON))
+	else if (justPressed & B_BUTTON)
 	{
 		count = 0;
 		for (uint8_t i = 0; i < 6; ++i)
@@ -385,9 +388,9 @@ void battleSelectMonster()
 		setFlashingSprite(8);
 		battleState = BATTLE_MONSTER_ACTIONS;
 	}
-	else if (arduboy.justPressed(UP_BUTTON))
+	else if (justPressed & UP_BUTTON)
 		selection += count - 1;
-	else if (arduboy.justPressed(DOWN_BUTTON))
+	else if (justPressed & DOWN_BUTTON)
 		++selection;
 	selection %= count;
 }
@@ -412,14 +415,15 @@ void battleSelectItem()
 
 void battleSelectSpell()
 {
+	uint8_t justPressed = arduboy.justPressedButtons();
 	fillSpellRect(0xFF);
 	drawSpells();
-	if (arduboy.justPressed(A_BUTTON))
+	if (justPressed & A_BUTTON)
 	{
 		selection = 0;
 		battleState = BATTLE_CHOOSEACTION;
 	}
-	else if (arduboy.justPressed(B_BUTTON) && player.spells[selection] > 0)
+	else if ((justPressed & B_BUTTON) && player.spells[selection] > 0)
 	{
 		if (player.mp < player.spells[selection])
 		{
@@ -442,11 +446,11 @@ void battleSelectSpell()
 			selection = 0;
 		}
 	}
-	else if (arduboy.justPressed(UP_BUTTON | DOWN_BUTTON))
+	else if ((justPressed & UP_BUTTON) | (justPressed & DOWN_BUTTON))
 		selection ^= 1;
-	else if (arduboy.justPressed(LEFT_BUTTON))
+	else if (justPressed & LEFT_BUTTON)
 		selection += 6;
-	else if (arduboy.justPressed(RIGHT_BUTTON))
+	else if (justPressed & RIGHT_BUTTON)
 		selection += 2;
 	selection &= 7;
 }
