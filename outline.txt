@@ -1,0 +1,38 @@
+This is an outline of what will take place in each of the 5 games
+
+Game 1: Towers of Perdition
+	Map Theme: Mainland
+		Single overworld with a central hub with paths leading to the 4 corners and the 5th tower in the center
+	Monsters:
+		1: GOBLIN
+		2: FIREWOLF
+		3: MEGA BAT
+		4: SCORPION
+		5: SKELETON
+		6: SLIME
+		7: WIZARD
+		8: GOLEM
+	Bosses:
+		1: BIG BONE
+		2: OOZE
+		3: SORCERER
+		4: COLOSSUS
+		5: DARKNESS
+Game 2: Sea of Despair
+	Map Theme:
+		Overworld is a bunch of small islands connected together by a vast underground cave network.
+	Monsters:
+		1: PIRATE
+		2: ALIGATOR
+		3: PIRANHA
+		4: MERMAID
+		5: SHARK
+		6: OCTOPUS
+		7: SIREN
+		8: SEA HAG
+	Bosses:
+		1: CAPTAIN
+		2: HYDRA
+		3: KRAKEN
+		4: TIAMAT
+		5: DARKNESS

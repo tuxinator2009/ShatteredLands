@@ -94,6 +94,7 @@ void gameLoop_Title()
 	uint8_t stopX = 126;
 	arduboy.drawBitmap(1, 2, bmpTitle, 126, 48);
 	drawSmallMessageBox();
+#ifdef ENABLE_NAME_ENTRY
 	if (selection == 0)
 	{
 		startX = 0;
@@ -109,17 +110,37 @@ void gameLoop_Title()
 		startX = 90;
 		stopX = 126;
 	}
-	for (uint8_t x = startX; x <= stopX; ++x)
-		arduboy.sBuffer[x + 896] = 0xFF;
 	cursorX = 1;
 	cursorY = 56;
+#else
+	if (selection == 0)
+	{
+		startX = 15;
+		stopX = 63;
+	}
+	else if (selection == 1)
+	{
+		startX = 75;
+		stopX = 111;
+	}
+	cursorX = 16;
+	cursorY = 56;
+#endif //ENABLE_NAME_ENTRY
+	for (uint8_t x = startX; x <= stopX; ++x)
+		arduboy.sBuffer[x + 896] = 0xFF;
 	drawMessageCompressed(messageTitleOptions);
+#ifdef ENABLE_NAME_ENTRY
 	if (justPressed & LEFT_BUTTON)
 		selection = (selection + 2) % 3;
 	else if (justPressed & RIGHT_BUTTON)
 		selection = (selection + 1) % 3;
+#else
+	if (justPressed & (LEFT_BUTTON | RIGHT_BUTTON))
+		selection ^= 1;
+#endif
 	else if (justPressed & B_BUTTON)
 	{
+#ifdef ENABLE_NAME_ENTRY
 		if (selection == 0) // NEW GAME
 		{
 			loadMap();
@@ -154,6 +175,42 @@ void gameLoop_Title()
 		}
 		else if (selection == 2)
 			gameState = STATE_UPLOAD;
+#else
+		if (selection == 0)
+		{
+			if (saveExists())
+			{
+				loadGame();
+				if (player.chunkID == -1) //Game continued from previous game in series
+				{
+					player.map = START_MAP;
+					player.chunkID = START_CHUNK;
+					player.x = START_X;
+					player.y = START_Y;
+					player.dir = DIR_DOWN;
+				}
+				loadMap();
+				#ifdef ENABLE_MUSIC
+				song = getMapSong(pMap);
+				songT = 0;
+				#endif
+				gameState = STATE_PLAYING;
+				selection = 0;
+				globalCounter = 0;
+				arduboy.initRandomSeed();
+			}
+			else
+			{
+				cursorX = 10;
+				drawSmallMessageBox();
+				drawMessageCompressed(messageNoSaveData);
+				arduboy.display();
+				waitButtons(A_BUTTON | B_BUTTON);
+			}
+		}
+		else if (selection == 1)
+			gameState = STATE_UPLOAD;
+#endif //ENABLE_NAME_ENTRY
 		selection = 0;
 	}
 }
@@ -541,7 +598,7 @@ void gameLoop_Story()
 	}
 	else if (selection == 9)
 	{
-		player.game[2] = '2';
+		player.game[2] = GAME_ID3 + 1;
 		player.chunkID = -1;
 		player.largeChests = 0;
 		player.seal = 0;
