@@ -31,15 +31,28 @@
 #define EVENT_MESSAGE			4
 #define EVENT_BOSSBATTLE	5
 
+static const uint16_t PROGMEM tilesetPassability[8] = {0x6E2F, 0x4100, 0x50C4, 0x7211};//0101000011000100
+
+//uint8_t getMapNumChunks(const uint8_t *map)
+//{
+//	return (pgm_read_byte(map) & 0x3F) + 1;
+//}
+
 uint8_t getMapTileset(const uint8_t *map)
 {
 	return pgm_read_byte(map) & 3;
+	//return (pgm_read_byte(map) >> 6) & 3;
 }
 
 uint8_t getMapSong(const uint8_t *map)
 {
 	return pgm_read_byte(map) >> 5;
 }
+
+/*uint8_t getMapMonsters(const uint8_t *map)
+{
+	return pgm_read_byte(map + 10);
+}*/
 
 uint8_t getChunkTileID(uint16_t tiles, int8_t metaID)
 {
@@ -60,7 +73,8 @@ uint8_t getChunkMetaTileID(const uint8_t *chunk, uint8_t x, uint8_t y, uint8_t b
 {
 	uint8_t bitOffset = (y * 8 + x) * bitsPerTile;
 	bitReaderInit(chunk + 5 + (bitOffset / 8), bitOffset % 8);
-	return bitReaderRead8(bitsPerTile);
+	//globalBitReader/.init(chunk + 5 + (bitOffset / 8), bitOffset % 8);
+	return bitReaderRead8(bitsPerTile);//globalBitReader/.read8(bitsPerTile);
 }
 
 uint8_t getChunkBits(uint16_t tiles)
@@ -154,7 +168,7 @@ bool canMove(const uint8_t *chunk, int8_t x, int8_t y, uint8_t direction)
 	if (chunk == NULL)
 		return false;
 	tiles = READ_WORD(chunk);
-	return (((uint16_t)READ_WORD(tilesetPassability + tilesetID * 2) >> (15 - getChunkTileID(tiles, getChunkMetaTileID(chunk, x, y, getChunkBits(tiles)))))) & 1;
+	return (((uint16_t)pgm_read_word(tilesetPassability + tilesetID) >> (15 - getChunkTileID(tiles, getChunkMetaTileID(chunk, x, y, getChunkBits(tiles)))))) & 1;
 }
 
 void drawChunk(const uint8_t *chunk, int16_t xOffset, int16_t yOffset)
@@ -224,28 +238,6 @@ int8_t getTileID(const uint8_t *chunk, int8_t x, int8_t y)
 	uint16_t tiles = READ_WORD(chunk);
 	return getChunkTileID(tiles, getChunkMetaTileID(chunk, x, y, getChunkBits(tiles)));
 }
-
-
-
-MAP_EVENTS_POINTER mapEvents[] =
-{
-	mapOverworldEvents,
-	mapMainCastleEvents,
-	mapTown1Events,
-	mapCastle1Events,
-	mapTower1Events,
-	mapTown2Events,
-	mapCastle2Events,
-	mapTower2Events,
-	mapTown3Events,
-	mapCaveEvents,
-	mapCastle3Events,
-	mapTower3Events,
-	mapTown4Events,
-	mapCastle4Events,
-	mapTower4Events,
-	mapTower5Events
-};
 
 void loadChunkIDs()
 {

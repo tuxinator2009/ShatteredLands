@@ -19,6 +19,11 @@
 #ifndef BATTLE_H
 #define BATTLE_H
 
+#define MONSTER_SIZE				21
+#define BOSS_SIZE						22
+#define MONSTER_GROUP_SIZE	4
+#define BOSS_GROUP_SIZE			2
+
 #define ACTION_CHOOSING		-1
 #define ACTION_ATTACK			0
 #define ACTION_DEFEND			1
@@ -56,6 +61,38 @@ BattleAction battleActions[7];
 BattleStats battleStats[7];
 int16_t battleExpGained;
 int16_t battleGoldGained;
+
+uint8_t getMonsterID(const uint8_t *group, uint8_t monster)
+{
+	uint8_t id = pgm_read_byte(group + (monster / 2));
+	if (monster % 2 == 0)
+		id >>= 4;
+	return id & 15;
+}
+
+bool isBossBattle(const uint8_t *group)
+{
+	return (pgm_read_byte(group) & 0xF0) == 0xF0;
+	//return getMonsterID(group, 0) == 15;
+}
+
+bool isMonsterGroupAvailable(const uint8_t *group, uint8_t info)
+{
+	uint8_t tiles = pgm_read_byte(group + 3);
+	uint8_t monsterID;
+	if (player.map == 0)
+		return (tiles & (0x80 >> info));
+	else
+	{
+		for (uint8_t i = 0; i < 6; ++i)
+		{
+			monsterID = getMonsterID(group, i);
+			if (monsterID != 15 && (info & (0x80 >> monsterID)) == 0)
+				return false;
+		}
+	}
+	return true;
+}
 
 bool monsterHasAttackSpells(int8_t id)
 {

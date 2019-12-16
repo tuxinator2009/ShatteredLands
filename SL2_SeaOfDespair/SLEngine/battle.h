@@ -19,6 +19,11 @@
 #ifndef BATTLE_H
 #define BATTLE_H
 
+#define MONSTER_SIZE				21
+#define BOSS_SIZE						22
+#define MONSTER_GROUP_SIZE	4
+#define BOSS_GROUP_SIZE			2
+
 #define ACTION_CHOOSING		-1
 #define ACTION_ATTACK			0
 #define ACTION_DEFEND			1
@@ -56,6 +61,38 @@ BattleAction battleActions[7];
 BattleStats battleStats[7];
 int16_t battleExpGained;
 int16_t battleGoldGained;
+
+uint8_t getMonsterID(const uint8_t *group, uint8_t monster)
+{
+	uint8_t id = pgm_read_byte(group + (monster / 2));
+	if (monster % 2 == 0)
+		id >>= 4;
+	return id & 15;
+}
+
+bool isBossBattle(const uint8_t *group)
+{
+	return (pgm_read_byte(group) & 0xF0) == 0xF0;
+	//return getMonsterID(group, 0) == 15;
+}
+
+bool isMonsterGroupAvailable(const uint8_t *group, uint8_t info)
+{
+	uint8_t tiles = pgm_read_byte(group + 3);
+	uint8_t monsterID;
+	if (player.map == 0)
+		return (tiles & (0x80 >> info));
+	else
+	{
+		for (uint8_t i = 0; i < 6; ++i)
+		{
+			monsterID = getMonsterID(group, i);
+			if (monsterID != 15 && (info & (0x80 >> monsterID)) == 0)
+				return false;
+		}
+	}
+	return true;
+}
 
 bool monsterHasAttackSpells(int8_t id)
 {
@@ -152,8 +189,8 @@ void loadMonster(uint8_t num, int8_t id)
 	battleStats[num].id = id;
 	if (id == 15)
 		return;
-	bitReaderInit(monsters + id * 21 + 8, 0);
-	battleStats[num].name = monsters + id * 21;
+	bitReaderInit(monsters + id * MONSTER_SIZE + 8, 0);
+	battleStats[num].name = monsters + id * MONSTER_SIZE;
 	battleStats[num].mp = bitReaderRead8(6);
 	battleStats[num].hp = battleStats[num].maxHP = bitReaderRead16(10);
 	for (uint8_t i = 0; i < 4; ++i)
@@ -167,8 +204,8 @@ void loadMonster(uint8_t num, int8_t id)
 
 void loadBoss(int8_t id)
 {
-	bitReaderInit(bosses + id * 22 + 8, 0);
-	battleStats[1].name = bosses + id * 22;
+	bitReaderInit(bosses + id * BOSS_SIZE + 8, 0);
+	battleStats[1].name = bosses + id * BOSS_SIZE;
 	battleStats[1].id = id;
 	battleStats[1].hp = battleStats[1].maxHP = bitReaderRead16(16);
 	battleStats[1].mp = bitReaderRead8(8);
@@ -198,6 +235,7 @@ void loadMonsterGroup()
 			loadMonster(i, getMonsterID(currentMonsterGroup, i));
 	}
 	battleStats[6].id = 16;
+	//battleStats[6].level = player.level;
 	battleStats[6].hp = player.hp;
 	battleStats[6].maxHP = getStat(player.level, PLAYER_LEVEL1_HP, PLAYER_LEVEL99_HP);
 	battleStats[6].mp = player.mp;
@@ -273,6 +311,8 @@ void setFlashingSprite(int8_t id)
 
 void battleChooseAction()
 {
+	uint8_t justPressed = arduboy.justPressedButtons();
+
 	uint8_t startX, stopX;
 	uint8_t y = (selection & 1) + 6;
 	if (selection <= 1)
@@ -296,7 +336,7 @@ void battleChooseAction()
 	cursorY = 48;
 	lineStartX = 7;
 	drawMessageCompressed(messageBattleChooseAction);
-	if (arduboy.justPressed(B_BUTTON))
+	if (justPressed & B_BUTTON)
 	{
 		clearBattleActions();
 		battleActions[6].action = selection;
@@ -328,17 +368,18 @@ void battleChooseAction()
 			battleState = BATTLE_MONSTER_ACTIONS;
 		selection = 0;
 	}
-	else if (arduboy.justPressed(UP_BUTTON | DOWN_BUTTON))
+	else if ((justPressed & UP_BUTTON) | (justPressed & DOWN_BUTTON))
 		selection ^= 1;
-	else if (arduboy.justPressed(LEFT_BUTTON))
+	else if (justPressed & LEFT_BUTTON)
 		selection += 4;
-	else if (arduboy.justPressed(RIGHT_BUTTON))
+	else if (justPressed & RIGHT_BUTTON)
 		selection += 2;
 	selection %= 6;
 }
 
 void battleSelectMonster()
 {
+	uint8_t justPressed = arduboy.justPressedButtons();
 	int8_t count = 0;
 	cursorX = 1;
 	cursorY = 48;
@@ -363,13 +404,13 @@ void battleSelectMonster()
 			++count;
 		}
 	}
-	if (arduboy.justPressed(A_BUTTON))
+	if (justPressed & A_BUTTON)
 	{
 		selection = 0;
 		battleState = BATTLE_CHOOSEACTION;
 		setFlashingSprite(8);
 	}
-	else if (arduboy.justPressed(B_BUTTON))
+	else if (justPressed & B_BUTTON)
 	{
 		count = 0;
 		for (uint8_t i = 0; i < 6; ++i)
@@ -384,9 +425,9 @@ void battleSelectMonster()
 		setFlashingSprite(8);
 		battleState = BATTLE_MONSTER_ACTIONS;
 	}
-	else if (arduboy.justPressed(UP_BUTTON))
+	else if (justPressed & UP_BUTTON)
 		selection += count - 1;
-	else if (arduboy.justPressed(DOWN_BUTTON))
+	else if (justPressed & DOWN_BUTTON)
 		++selection;
 	selection %= count;
 }
@@ -411,14 +452,15 @@ void battleSelectItem()
 
 void battleSelectSpell()
 {
+	uint8_t justPressed = arduboy.justPressedButtons();
 	fillSpellRect(0xFF);
 	drawSpells();
-	if (arduboy.justPressed(A_BUTTON))
+	if (justPressed & A_BUTTON)
 	{
 		selection = 0;
 		battleState = BATTLE_CHOOSEACTION;
 	}
-	else if (arduboy.justPressed(B_BUTTON) && player.spells[selection] > 0)
+	else if ((justPressed & B_BUTTON) && player.spells[selection] > 0)
 	{
 		if (player.mp < player.spells[selection])
 		{
@@ -441,11 +483,11 @@ void battleSelectSpell()
 			selection = 0;
 		}
 	}
-	else if (arduboy.justPressed(UP_BUTTON | DOWN_BUTTON))
+	else if ((justPressed & UP_BUTTON) | (justPressed & DOWN_BUTTON))
 		selection ^= 1;
-	else if (arduboy.justPressed(LEFT_BUTTON))
+	else if (justPressed & LEFT_BUTTON)
 		selection += 6;
-	else if (arduboy.justPressed(RIGHT_BUTTON))
+	else if (justPressed & RIGHT_BUTTON)
 		selection += 2;
 	selection &= 7;
 }

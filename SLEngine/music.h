@@ -16,9 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-#include <ArduboyTones.h>
+#ifndef MUSIC_H
+#define MUSIC_H
 
-#define ENABLE_MUSIC
+#include <ArduboyTones.h>
 
 #define SONG_TITLE			0
 #define SONG_OVERWORLD	1
@@ -31,7 +32,6 @@
 ArduboyTones sound(arduboy.audio.enabled);
 uint8_t song = 0;
 uint16_t songT = 0;
-uint8_t songTempo[] = {8,8,8,8,12,16,4};
 uint16_t notes[] = {32976,32988,33001,33015,33030,33045,33062,33079,
 										33098,33117,33138,33160,33183,33208,33234,33262,
 										33291,33322,33355,33390,33427,33466,33508,33552,
@@ -40,24 +40,6 @@ uint16_t notes[] = {32976,32988,33001,33015,33030,33045,33062,33079,
 										34861,34986,35117,35257,35405,35562,35728,35904,
 										36090,36288,36497,36719,36954,37203,37467,37746,
 										38042,38356,38688,39040,39413,39808,40227,40670};
-
-/*
- * Title: 0
- * Overworld: 1
- * Castle: 2
- * Town: 3
- * Tower: 4
- * Cave: 5
- * Battle: 6
- */
-
-#define song0(t) t*(t>>3|t>>1)//1: Title
-#define song1(t) t*(t>>1|t<<2|t>>3)&31//7: Overworld
-#define song2(t) ((t*(t>>3|t>>1)&15)|3)<<1//3: Castle
-#define song3(t) ((t*(t>>3|t<<2)&15)|3)<<1//5: Town
-#define song4(t) t*(t>>2|t>>1)&15//2: Tower
-#define song5(t) t*(t>>3|t<<2)&15//4: Cave
-#define song6(t) t*(t>>3|t>>1)&7//6: Battle
 
 void nextNote()
 {
@@ -80,3 +62,5 @@ void nextNote()
 	sound.tone(notes[note&0x3F], songTempo[song]<<5);
 	++songT;
 }
+
+#endif // MUSIC_H
