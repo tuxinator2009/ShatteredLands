@@ -764,7 +764,13 @@ void setup()
 	arduboy.display();
 	arduboy.systemButtons();
 	#ifdef ENABLE_MUSIC
-	arduboy.audio.begin();
+		arduboy.audio.begin();
+		#ifdef MUSIC_USE_BEEP
+			beep1.begin();
+			#ifdef MUSIC_2PIN
+				beep2.begin();
+			#endif
+		#endif
 	#endif
 	//END: arduboy.begin()
 	arduboy.setFrameRate(30);
@@ -774,6 +780,12 @@ void loop()
 {
 	if (!(arduboy.nextFrame()))
 		return;
+	#ifdef MUSIC_USE_BEEP
+		beep1.timer();
+		#ifdef MUSIC_2PIN
+			beep2.timer();
+		#endif
+	#endif
 	arduboy.pollButtons();
 	switch (gameState)
 	{

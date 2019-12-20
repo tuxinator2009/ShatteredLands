@@ -19,11 +19,6 @@
 #ifndef MAPS_H
 #define MAPS_H
 
-#define MAP static const uint8_t PROGMEM
-#define MAP_POINTER static const uint8_t* const PROGMEM
-#define MAP_EVENTS static const uint8_t PROGMEM
-#define MAP_EVENTS_POINTER static const uint8_t* const PROGMEM
-
 #define EVENT_TELEPORT		0
 #define EVENT_INN					1
 #define EVENT_SHOP				2

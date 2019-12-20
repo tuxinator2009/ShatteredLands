@@ -777,6 +777,10 @@ void battleResolveCombat()
 				arduboy.display(CLEAR_BUFFER);
 			}
 			drawMap();
+#ifdef ENABLE_MUSIC
+			song = getMapSong(pMap);
+			songT = 0;
+#endif
 			gameState = STATE_PLAYING;
 		}
 		else
